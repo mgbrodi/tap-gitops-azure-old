@@ -1,0 +1,80 @@
+tap_install:
+  values:
+    excluded_packages: []
+    shared:
+      ingress_domain: tap.marygabry.name
+      ingress_issuer: ""
+    ceip_policy_disclosed: true
+    profile: full
+    supply_chain: basic
+    ootb_supply_chain_basic:
+      registry:
+        server: harbor.marygabry.name
+        repository: tap
+      gitops:
+        ssh_secret: workload-git-auth
+    ootb_supply_chain_testing_scanning:
+      registry:
+        server: harbor.marygabry.name
+        repository: tap
+      gitops:
+        ssh_secret: workload-git-auth
+    contour:
+      envoy:
+        service:
+          type: LoadBalancer
+    buildservice:
+      kp_default_repository: harbor.marygabry.name/tap/buildservice
+    tap_gui:
+      tls:
+        namespace: tanzu-system-ingress
+        secretName: taptlscert
+      service_type: ClusterIP
+      metadataStoreAutoconfiguration: true
+      app_config:
+        auth:
+          allowGuestAccess: true
+        catalog:
+          locations:
+          - type: url
+            target: https://github.com/mgbrodi/tapblankcatalog/blob/main/catalog-info.yaml
+    metadata_store:
+      ns_for_export_app_cert: '*'
+      app_service_type: ClusterIP
+    scanning:
+      metadataStore:
+        url: metadata-store.tap.marygabry.name
+    grype:
+      namespace: default
+      targetImagePullSecret: registries-credentials
+    policy:
+      tuf_enabled: false
+    cnrs:
+      domain_template: '{{.Name}}-{{.Namespace}}.{{.Domain}}'
+      default_tls_secret: tanzu-system-ingress/taptlscert
+    api_portal:
+      apiPortalServer:
+        sourceUrls: https://petstore.swagger.io/v2/swagger.json,http://customer-profile-x.default.svc.cluster.local:8080/api-docs,http://scg-operator.tap-install.svc.cluster.local/openapi
+        trustInsecureSourceUrls: true
+        sourceUrlsCacheTtlSec: "30"
+        sourceUrlsTimeoutSec: "30"
+    namespace_provisioner:
+      controller: false
+      additional_sources:
+      - git:
+          ref: origin/main
+          subPath: clusters/taplab/cluster-config/namespaces/namespace-resources
+          url: http://github.com/mgbrodi/tap-gitops-azure
+      gitops_install:
+        ref: origin/main
+        subPath: clusters/taplab/cluster-config/namespaces
+        url: http://github.com/mgbrodi/tap-gitops-azure
+        path: _ytt_lib/namespace-resources
+      default_parameters:
+        supply_chain_service_account:
+          secrets:
+          - workload-git-auth
+    package_overlays:
+    - name: api-portal
+      secrets:
+      - name: api-portal-cm-tls-overlay-secret

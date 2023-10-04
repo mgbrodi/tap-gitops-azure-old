@@ -1,0 +1,6 @@
+git:
+  url: http://github.com/mgbrodi/tap-gitops-azure
+  ref: origin/main
+  sub_path: clusters/taplab/cluster-config
+tap_package_repository:
+  oci_repository: registry.tanzu.vmware.com/tanzu-application-platform/tap-packages
