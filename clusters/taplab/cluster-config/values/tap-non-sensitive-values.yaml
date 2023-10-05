@@ -78,3 +78,16 @@ tap_install:
     - name: api-portal
       secrets:
       - name: api-portal-cm-tls-overlay-secret
+
+local_source_proxy:
+  repository: harbor.marygabry.name/tap/local-source
+
+  push_secret:
+    name: lsp-push-credentials
+    namespace: tap-install
+    create_export: true
+
+  pull_secret:
+    name: lsp-pull-credentials
+    namespace: tap-install
+    create_export: true
